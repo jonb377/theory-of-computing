@@ -1,6 +1,9 @@
-package regular.dfa;
+package toc.regular.dfa;
 
-import java.util.Arrays;
+import java.util.*;
+import java.util.stream.IntStream;
+
+import static toc.Settings.ALPHABET_SIZE;
 
 /**
  * @author Jon Bolin
@@ -42,7 +45,7 @@ public class TotalTransitionFunction {
     int[][] transitions;
 
     /**
-     * Create a new regular.dfa.TotalTransitionFunction from the given mapping.
+     * Create a new toc.regular.dfa.TotalTransitionFunction from the given mapping.
      * @param transition Transition function. transition[q][a] is delta(q, a).
      *                   q = 0 is the trap state; transition[0] must be {0, 0, ..., 0}
      */
@@ -68,5 +71,32 @@ public class TotalTransitionFunction {
      */
     int of(int state, char c) {
         return transitions[state][(int) c];
+    }
+
+    public TotalTransitionFunction keepStates(Set<Integer> states) {
+        System.out.println("Keeping states " + states  + " out of " + numStates());
+        states.add(0);
+        int newSize = states.size();    // One additional for the trap state
+        int[] offsets = new int[transitions.length];
+        int currOffset = 0;
+        for (int i = 0; i < offsets.length; i++) {
+            if (!states.contains(i)) {
+                offsets[i] = i;
+                currOffset ++;
+            } else {
+                offsets[i] = currOffset;
+            }
+        }
+        System.out.println("Offsets: " + Arrays.toString(offsets));
+        int[][] newTransition = new int[newSize][ALPHABET_SIZE];
+        int currTransition = 0;
+        for (int i = 0; i < transitions.length; i++) {
+            if (!states.contains(i)) continue;
+            for (int j = 0; j < ALPHABET_SIZE; j++) {
+                newTransition[currTransition][j] = transitions[i][j] - offsets[transitions[i][j]];
+            }
+            currTransition++;
+        }
+        return new TotalTransitionFunction(newTransition);
     }
 }

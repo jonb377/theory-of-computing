@@ -1,4 +1,4 @@
-package regular.nfa;
+package toc.regular.nfa;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -36,7 +36,7 @@ public class TransitionFunction {
     Set<Integer>[][] transitions;
 
     /**
-     * Create a new regular.dfa.TotalTransitionFunction from the given mapping.
+     * Create a new toc.regular.dfa.TotalTransitionFunction from the given mapping.
      * @param transition Transition function. transition[q][a] is delta(q, a).
      *                   q = 0 is the trap state; transition[0] must be {0, 0, ..., 0}
      */

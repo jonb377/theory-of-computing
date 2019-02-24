@@ -1,12 +1,12 @@
-import regular.dfa.DFA;
-import regular.dfa.TotalTransitionFunction;
-import regular.nfa.NFA;
-import regular.nfa.TransitionFunction;
+import toc.regular.Acceptor;
+import toc.regular.dfa.DFA;
+import toc.regular.dfa.TotalTransitionFunction;
+import toc.regular.nfa.NFA;
+import toc.regular.nfa.TransitionFunction;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
+
+import static toc.Settings.ALPHABET_SIZE;
 
 /**=
  * @author Jon Bolin
@@ -14,11 +14,21 @@ import java.util.Set;
 public class Test {
 
     public static void main(String[] args) {
-        nfaTest();
+        testReduceStates();
+    }
+
+    public static void testAcceptor(Acceptor... acceptors) {
+        Scanner in = new Scanner(System.in);
+        while (true) {
+            String s = in.nextLine();
+            for (Acceptor a : acceptors) {
+                System.out.println(a.recognizes(s));
+            }
+        }
     }
 
     public static void nfaTest() {
-        Set[][] t = new Set[4][256];
+        Set[][] t = new Set[4][ALPHABET_SIZE];
         t[1]['a'] = new HashSet<>(Arrays.asList(1, 2));
         t[1]['b'] = new HashSet<>(Arrays.asList(2));
         t[2]['a'] = new HashSet<>(Arrays.asList(3));
@@ -28,15 +38,11 @@ public class Test {
         Set F = new HashSet(Arrays.asList(2));
         NFA nfa = new NFA(delta, F);
 
-        Scanner in = new Scanner(System.in);
-        while (true) {
-            String s = in.nextLine();
-            System.out.println(nfa.recognizes(s));
-        }
+        testAcceptor(nfa);
     }
 
     public static void dfaTest() {
-        int[][] transition = new int[3][256];
+        int[][] transition = new int[3][ALPHABET_SIZE];
         transition[1]['a'] = 1;
         transition[1]['b'] = 2;
         transition[2]['a'] = 0;
@@ -45,10 +51,44 @@ public class Test {
         Set F = new HashSet(Arrays.asList(2));
         DFA dfa = new DFA(t, F);
 
-        Scanner in = new Scanner(System.in);
-        while (true) {
-            String s = in.nextLine();
-            System.out.println(dfa.recognizes(s));
-        }
+        testAcceptor(dfa);
+    }
+
+    public static void testReduceStates() {
+        int[][] t = new int[7][ALPHABET_SIZE];
+        t[1]['0'] = 2;
+        t[1]['1'] = 3;
+        t[2]['0'] = 3;
+        t[2]['1'] = 4;
+        t[3]['0'] = 3;
+        t[3]['1'] = 5;
+        t[4]['0'] = 4;
+        t[4]['1'] = 4;
+        t[5]['0'] = 5;
+        t[5]['1'] = 5;
+        t[6]['0'] = 6;
+        t[6]['1'] = 5;
+        TotalTransitionFunction transition = new TotalTransitionFunction(t);
+
+        Set F = new HashSet(Arrays.asList(4,5));
+        DFA dfa = new DFA(transition, F);
+        DFA reduced = dfa.reduceStates();
+        System.out.println("Original: " + dfa.numStates());
+        System.out.println("Reduced:  " + reduced.numStates());
+
+        testAcceptor(dfa, reduced);
+    }
+
+    public static void testNFAtoDFA() {
+        Set[][] t = new Set[3][ALPHABET_SIZE];
+        t[1]['a'] = new HashSet<>(Arrays.asList(1, 2));
+        t[1]['b'] = new HashSet<>(Arrays.asList(2));
+        t[2]['b'] = new HashSet<>(Arrays.asList(1, 2));
+        TransitionFunction delta = new TransitionFunction(t);
+
+        Set F = new HashSet(Arrays.asList(2));
+        NFA nfa = new NFA(delta, F);
+        DFA dfa = nfa.convertToDFA();
+        testAcceptor(nfa, dfa);
     }
 }
