@@ -30,11 +30,14 @@ public class DFATransitionFunction extends TransitionFunction<Integer> {
      * @param Σ The alphabet set.
      * @return A transition function.
      */
-    public static DFATransitionFunction createTotalTransitionFunction(Integer[][] transition, Set<Character> Σ) {
+    public static DFATransitionFunction createTotalTransitionFunction(Map<Character, Integer>[] transition, Set<Character> Σ) {
         // Verify this is a valid transition function.
         for (int q = 0; q < transition.length; q++) {
-            for (char a = 0; a < transition[q].length; a++) {
-                if (Σ.contains(a) && (transition[q][a] == null || transition[q][a] < 0 || transition[q][a] > transition.length)) {
+            if (transition[q].size() != Σ.size()) {
+                throw new RuntimeException("Busted Transition Function");
+            }
+            for (char a : transition[q].keySet()) {
+                if (!Σ.contains(a) || transition[q].get(a) == null || transition[q].get(a) < 0 || transition[q].get(a) > transition.length) {
                     throw new RuntimeException("Busted Transition Function");
                 }
             }
@@ -65,7 +68,7 @@ public class DFATransitionFunction extends TransitionFunction<Integer> {
      * @param transition Transition function. transition[q][a] is delta(q, a).
      *                   q = 0 is the trap state; transition[0] must be {0, 0, ..., 0}
      */
-    private DFATransitionFunction(Integer[][] transition, Set<Character> Σ) {
+    private DFATransitionFunction(Map<Character, Integer>[] transition, Set<Character> Σ) {
         super(transition, Σ);
     }
 

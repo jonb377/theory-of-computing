@@ -13,7 +13,7 @@ public class NFATransitionFunction extends TransitionFunction<Set<Integer>> {
 
     private Set<Integer>[] λ;
 
-    public static NFATransitionFunction createNFATransition(Set<Integer>[][] transitions, Set<Character> Σ) {
+    public static NFATransitionFunction createNFATransition(Map<Character, Set<Integer>>[] transitions, Set<Character> Σ) {
         Set<Integer>[] λ = (Set<Integer>[]) new Set[transitions.length];
         for (int i = 0; i < λ.length; i++) {
             λ[i] = EMPTY;
@@ -21,13 +21,20 @@ public class NFATransitionFunction extends TransitionFunction<Set<Integer>> {
         return createNFATransition(transitions, λ, Σ);
     }
 
-    public static NFATransitionFunction createNFATransition(Set<Integer>[][] transitions, Set<Integer>[] λ, Set<Character> Σ) {
+    public static NFATransitionFunction createNFATransition(Map<Character, Set<Integer>>[] transitions, Set<Integer>[] λ, Set<Character> Σ) {
         // Verify that this is a valid transition function
-        if (!Arrays.stream(transitions).allMatch(
-                (x)-> Arrays.stream(x).allMatch(
-                        (s) -> s == null || s.stream().allMatch(
-                                (i) -> i >= 0 && i < transitions.length)))) {
-            throw new RuntimeException("Busted Transition Function");
+        for (Map<Character, Set<Integer>> map : transitions) {
+            for (char c : map.keySet()) {
+                if (!Σ.contains(c)) {
+                    throw new RuntimeException("Busted Transition Function");
+                } else if (map.get(c) != null) {
+                    for (int q : map.get(c)) {
+                        if (q < 0 || q >= transitions.length) {
+                            throw new RuntimeException("Busted Transition Function: " + q + "\t" + transitions.length);
+                        }
+                    }
+                }
+            }
         }
         return new NFATransitionFunction(transitions, λ, Σ);
     }
@@ -37,7 +44,7 @@ public class NFATransitionFunction extends TransitionFunction<Set<Integer>> {
      * @param transition Transition function. transition[q][a] is delta(q, a).
      *                   q = 0 is the trap state; transition[0] must be {0, 0, ..., 0}
      */
-    private NFATransitionFunction(Set<Integer>[][] transition, Set<Integer>[] λ, Set<Character> Σ) {
+    private NFATransitionFunction(Map<Character, Set<Integer>>[] transition, Set<Integer>[] λ, Set<Character> Σ) {
         super(transition, Σ);
         this.λ = λ;
     }

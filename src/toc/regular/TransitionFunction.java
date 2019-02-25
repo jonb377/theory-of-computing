@@ -10,7 +10,7 @@ public abstract class TransitionFunction<T> {
     public Map<Character, Integer> map;
     protected Object[][] transitions;
 
-    public TransitionFunction(T[][] transition, Set<Character> Σ) {
+    public TransitionFunction(Map<Character, T>[] transition, Set<Character> Σ) {
         // Create the map: Σ -> {0, 1, ..., |Σ| - 1}
         Map<Character, Integer> map = new HashMap<>();
         List<Character> alphaList = new ArrayList<>(Σ);
@@ -22,7 +22,7 @@ public abstract class TransitionFunction<T> {
         this.transitions = new Object[transition.length][Σ.size()];
         for (int i = 0; i < transitions.length; i++) {
             for (int j = 0; j < Σ.size(); j++) {
-                this.transitions[i][j] = transition[i][alphaList.get(j)];
+                this.transitions[i][j] = transition[i].getOrDefault(alphaList.get(j), null);
             }
         }
     }
