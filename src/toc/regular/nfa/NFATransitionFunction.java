@@ -42,13 +42,12 @@ public class NFATransitionFunction extends TransitionFunction<Set<Integer>> {
         this.λ = λ;
     }
 
-    @Override
-    public Set<Integer> of(int state, char a) {
+    public Set<Integer> expandLambda(Set<Integer> states) {
         // Expand out by lambda transitions.
         Set<Integer> startStates = new HashSet<>();
-        startStates.add(state);
+        startStates.addAll(states);
         Stack<Integer> stack = new Stack<>();
-        stack.push(state);
+        stack.addAll(states);
         while (!stack.isEmpty()) {
             int q = stack.pop();
             for (int p : λ[q]) {
@@ -58,7 +57,13 @@ public class NFATransitionFunction extends TransitionFunction<Set<Integer>> {
                 }
             }
         }
-//        System.out.println("Start States: " + startStates);
+//        System.out.println("Start States: " + startStates + " given " + states);
+        return startStates;
+    }
+
+    @Override
+    public Set<Integer> of(int state, char a) {
+        Set<Integer> startStates = expandLambda(new HashSet<>(Arrays.asList(state)));
 
         // Evaluate the transition
         Set<Integer> result = new HashSet<>();
@@ -70,18 +75,7 @@ public class NFATransitionFunction extends TransitionFunction<Set<Integer>> {
 //        System.out.println("Initial Result: " + result);
 
         // Add in possible lambda transitions
-        for (int q : result) {
-            stack.push(q);
-        }
-        while (!stack.isEmpty()) {
-            int q = stack.pop();
-            for (int p : λ[q]) {
-                if (!result.contains(p)) {
-                    result.add(p);
-                    stack.push(p);
-                }
-            }
-        }
+        result.addAll(expandLambda(result));
 //        System.out.println("Final Result: " + result);
         return result;
     }

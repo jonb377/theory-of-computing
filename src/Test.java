@@ -15,8 +15,9 @@ public class Test {
 
     public static void main(String[] args) {
 //        dfaTest();
-        nfaTest();
+//        nfaTest();
 //        testReduceStates();
+        testNFAtoDFA();
     }
 
     public static void testAcceptor(Acceptor... acceptors) {
@@ -79,7 +80,7 @@ public class Test {
         Set<Character> Σ = new HashSet<>(Arrays.asList('0', '1'));
         DFATransitionFunction transition = DFATransitionFunction.createTotalTransitionFunction(t, Σ);
 
-        Set F = new HashSet(Arrays.asList(4,5));
+        Set F = new HashSet(Arrays.asList(3,4));
         DFA dfa = new DFA(transition, Σ, F);
         DFA reduced = dfa.reduceStates();
         System.out.println("Original: " + dfa.numStates());
@@ -90,15 +91,24 @@ public class Test {
 
     public static void testNFAtoDFA() {
         Set[][] t = new Set[3][ALPHABET_SIZE];
-        t[1]['a'] = new HashSet<>(Arrays.asList(1, 2));
-        t[1]['b'] = new HashSet<>(Arrays.asList(2));
-        t[2]['b'] = new HashSet<>(Arrays.asList(1, 2));
-        Set<Character> Σ = new HashSet<>(Arrays.asList('a', 'b'));
-        NFATransitionFunction delta = NFATransitionFunction.createNFATransition(t, Σ);
+        t[0]['0'] = new HashSet<>(Arrays.asList(1));
+        t[1]['0'] = new HashSet<>(Arrays.asList(0, 2));
+        t[1]['1'] = new HashSet<>(Arrays.asList(1, 2));
+        t[2]['0'] = new HashSet<>(Arrays.asList(2));
+        t[2]['1'] = new HashSet<>(Arrays.asList(1));
 
-        Set F = new HashSet(Arrays.asList(2));
+        Set[] λ = new Set[3];
+        λ[0] = new HashSet<>(Arrays.asList(1));
+        λ[1] = new HashSet<>();
+        λ[2] = new HashSet<>();
+
+        Set<Character> Σ = new HashSet<>(Arrays.asList('0', '1'));
+        NFATransitionFunction delta = NFATransitionFunction.createNFATransition(t, λ, Σ);
+
+        Set F = new HashSet(Arrays.asList(1));
         NFA nfa = new NFA(delta, Σ, F);
         DFA dfa = nfa.convertToDFA();
-        testAcceptor(nfa, dfa);
+        DFA reduced = dfa.reduceStates();
+        testAcceptor(nfa, dfa, reduced);
     }
 }

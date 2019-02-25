@@ -21,7 +21,7 @@ public class NFA extends Acceptor<Set<Integer>> {
     }
 
     public boolean recognizes(String s) {
-        Set<Integer> currStates = new HashSet<>(Arrays.asList(0));
+        Set<Integer> currStates = δ.expandLambda(new HashSet<>(Arrays.asList(0)));
         Set<Integer> nextStates = new HashSet<>();
         Set<Integer> tmp;
         for (char c : s.toCharArray()) {
@@ -33,7 +33,7 @@ public class NFA extends Acceptor<Set<Integer>> {
             nextStates = tmp;
             nextStates.clear();
         }
-//        System.out.println("Resulting States: " + currStates);
+        System.out.println("Resulting States: " + currStates);
         currStates.retainAll(F);
         return currStates.size() > 0;
     }
@@ -47,7 +47,7 @@ public class NFA extends Acceptor<Set<Integer>> {
         Set<HashSet<Integer>> newStates = new HashSet<>();
 
         // Add the initial state
-        HashSet<Integer> initialState = new HashSet<>(Arrays.asList(1));
+        HashSet<Integer> initialState = new HashSet<>(Arrays.asList(0));
         newStates.add(initialState);
 
         // Trap state
@@ -95,6 +95,12 @@ public class NFA extends Acceptor<Set<Integer>> {
                 finalStates.add(stateNumber);
             }
         }
+
+        // Add lambda to the DFA if it's in the language.
+        if (this.recognizes("")) {
+            finalStates.add(0);
+        }
+
 //        //System.out.println("Final States: " + finalStates);
         Integer[][] transition = new Integer[transitionFunction.size()][];
         for (int i = 0; i < transitionFunction.size(); i++) {

@@ -80,7 +80,11 @@ public class DFATransitionFunction extends TransitionFunction<Integer> {
 
     @Override
     public Integer of(int state, char c) {
-        return (Integer) transitions[state][map.get(c)];
+        if (!map.containsKey(c)) {
+            throw new RuntimeException("Character not in alphabet.");
+        }
+        Integer result = (Integer) transitions[state][map.get(c)];
+        return result == null ? 0 : result;
     }
 
 
@@ -110,6 +114,7 @@ public class DFATransitionFunction extends TransitionFunction<Integer> {
             for (int j = 0; j < map.size(); j++) {
                 newTransition[currTransition][j] = (Integer) transitions[i][j] - offsets[(int) transitions[i][j]];
             }
+            System.out.println(Arrays.toString(newTransition[currTransition]));
             currTransition++;
         }
         return new DFATransitionFunction(newTransition, map);

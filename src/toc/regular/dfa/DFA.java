@@ -47,11 +47,11 @@ public class DFA extends Acceptor<Integer> {
         // Step 1: Remove inaccessible states
         Set<Integer> accessible = new HashSet<>();
         Stack<Integer> states = new Stack<>();
-        states.add(1);
-        accessible.add(1);
+        states.add(0);
+        accessible.add(0);
         while (!states.isEmpty()) {
             int curr = states.pop();
-            for (char a = 0; a < Σ.size(); a++) {
+            for (char a : Σ) {
                 int next = δ.of(curr, a);
                 if (!accessible.contains(next)) {
                     accessible.add(next);
@@ -73,7 +73,9 @@ public class DFA extends Acceptor<Integer> {
             }
         }
         for (int f : F) {
-            distinguishable[f].addAll(nonFinal);
+            if (accessible.contains(f)) {
+                distinguishable[f].addAll(nonFinal);
+            }
         }
 
         // Step 3: Mark distinguishable transitions
@@ -87,7 +89,7 @@ public class DFA extends Acceptor<Integer> {
                     if (q == p || distinguishable[q].contains(p)) continue;
 
                     // ...test if newDelta(p, a) and newDelta(p, q) are distinguishable...
-                    for (char a = 0; a < Σ.size(); a++) {
+                    for (char a : Σ) {
                         int pa = newDelta.of(p, a);
                         int qa = newDelta.of(q, a);
 
@@ -96,6 +98,7 @@ public class DFA extends Acceptor<Integer> {
                             distinguishable[p].add(q);
                             distinguishable[q].add(p);
                             newPair = true;
+                            break;
                         }
                     }
                 }
@@ -116,18 +119,24 @@ public class DFA extends Acceptor<Integer> {
             }
             newStateNumber[i] = newStateCount++;
         }
+        System.out.println("NewStateNumber: " + Arrays.toString(newStateNumber));
 
         // Step 5: Construct a new transition function on the sets of indistinguishable states.
         Integer[][] transition = new Integer[newStateCount][Σ.size()];
         for (int i = 0; i < newDelta.numStates(); i++) {
-            for (char a = 0; a < Σ.size(); a++) {
-                transition[newStateNumber[i]][a] = newStateNumber[newDelta.of(i, a)];
+            for (char a : Σ) {
+                transition[newStateNumber[i]][δ.map.get(a)] = newStateNumber[newDelta.of(i, a)];
             }
         }
 
-        DFATransitionFunction finalDelta = DFATransitionFunction.createTotalTransitionFunction(transition, Σ);
+        DFATransitionFunction finalDelta = DFATransitionFunction.createTotalTransitionFunction(transition, δ.map);
         Set<Integer> finalF = new HashSet<>();
-        for (int f : F) finalF.add(newStateNumber[f]);
+        for (int f : F) {
+            if (accessible.contains(f)) {
+                finalF.add(newStateNumber[f]);
+            }
+        }
+        System.out.println("Reduced from " + numStates() + " to " + newStateCount + " states.");
         return new DFA(finalDelta, Σ, finalF);
     }
 
