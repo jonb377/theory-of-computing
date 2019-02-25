@@ -1,23 +1,21 @@
 package toc.regular.dfa;
 
-import toc.Settings;
 import toc.regular.Acceptor;
 
 import java.util.*;
 import java.util.stream.IntStream;
 
-import static toc.Settings.ALPHABET_SIZE;
-
 /**
  * @author Jon Bolin
  */
-public class DFA implements Acceptor {
+public class DFA extends Acceptor<Integer> {
 
-    private TotalTransitionFunction delta;
+    private DFATransitionFunction δ;
     private Set<Integer> F;
 
-    public DFA(TotalTransitionFunction delta, Set F) {
-        this.delta = delta;
+    public DFA(DFATransitionFunction δ, Set<Character> Σ, Set F) {
+        super(Σ);
+        this.δ = δ;
         this.F = F;
     }
 
@@ -27,9 +25,9 @@ public class DFA implements Acceptor {
      * @return
      */
     public boolean recognizes(String s) {
-        int state = 1;
+        int state = 0;
         for (char c : s.toCharArray()) {
-            state = delta.of(state, c);
+            state = δ.of(state, c);
         }
         return F.contains(state);
     }
@@ -38,9 +36,13 @@ public class DFA implements Acceptor {
      * @return The number of states in the DFA.
      */
     public int numStates() {
-        return delta.numStates();
+        return δ.numStates();
     }
 
+    /**
+     * Minimizes the number of states in the DFA.
+     * @return A minimized branch.
+     */
     public DFA reduceStates() {
         // Step 1: Remove inaccessible states
         Set<Integer> accessible = new HashSet<>();
@@ -49,15 +51,15 @@ public class DFA implements Acceptor {
         accessible.add(1);
         while (!states.isEmpty()) {
             int curr = states.pop();
-            for (char a = 0; a < ALPHABET_SIZE; a++) {
-                int next = delta.of(curr, a);
+            for (char a = 0; a < Σ.size(); a++) {
+                int next = δ.of(curr, a);
                 if (!accessible.contains(next)) {
                     accessible.add(next);
                     states.push(next);
                 }
             }
         }
-        TotalTransitionFunction newDelta = delta.keepStates(accessible);
+        DFATransitionFunction newDelta = δ.keepStates(accessible);
 
         // Step 2: Mark final / nonfinal pairs as distinguishable
         HashSet<Integer>[] distinguishable = new HashSet[newDelta.numStates()];
@@ -85,7 +87,7 @@ public class DFA implements Acceptor {
                     if (q == p || distinguishable[q].contains(p)) continue;
 
                     // ...test if newDelta(p, a) and newDelta(p, q) are distinguishable...
-                    for (char a = 0; a < ALPHABET_SIZE; a++) {
+                    for (char a = 0; a < Σ.size(); a++) {
                         int pa = newDelta.of(p, a);
                         int qa = newDelta.of(q, a);
 
@@ -116,17 +118,17 @@ public class DFA implements Acceptor {
         }
 
         // Step 5: Construct a new transition function on the sets of indistinguishable states.
-        int[][] transition = new int[newStateCount][ALPHABET_SIZE];
+        Integer[][] transition = new Integer[newStateCount][Σ.size()];
         for (int i = 0; i < newDelta.numStates(); i++) {
-            for (char a = 0; a < ALPHABET_SIZE; a++) {
+            for (char a = 0; a < Σ.size(); a++) {
                 transition[newStateNumber[i]][a] = newStateNumber[newDelta.of(i, a)];
             }
         }
 
-        TotalTransitionFunction finalDelta = new TotalTransitionFunction(transition);
+        DFATransitionFunction finalDelta = DFATransitionFunction.createTotalTransitionFunction(transition, Σ);
         Set<Integer> finalF = new HashSet<>();
         for (int f : F) finalF.add(newStateNumber[f]);
-        return new DFA(finalDelta, finalF);
+        return new DFA(finalDelta, Σ, finalF);
     }
 
 }
