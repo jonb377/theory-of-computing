@@ -12,7 +12,7 @@ public abstract class Acceptor<T> {
     private TransitionFunction<T> δ;
 
     public Acceptor(Set<Character> Σ) {
-        this.Σ = Collections.unmodifiableSet(Σ);
+        this.Σ = Set.copyOf(Σ);
     }
 
     /**

@@ -11,8 +11,9 @@ public class DFATransitionFunction extends TransitionFunction<Integer> {
 
     /**
      * Parse the transition function from the given string.
-     * Format: 1: a0 b2 c1, 2: b2
+     * Format: (1 a 0)(1 b 2)...
      * will map delta(1, a) = 0, delta(1, b) = 2, etc.
+     * Parentheses are optional.
      *
      * Any values not specified will map to the trap state by default.
      *
@@ -20,7 +21,26 @@ public class DFATransitionFunction extends TransitionFunction<Integer> {
      * @return A new transition function representing the string.
      */
     public static DFATransitionFunction fromString(String s) {
-        throw new RuntimeException("I'm Lazy :D");
+        s = s.replaceAll("[\\(\\),]", " ");
+        Scanner in = new Scanner(s);
+        Map<Integer, Map<Character, Integer>> map = new HashMap<>();
+        int maxState = -1;
+        while (in.hasNext()) {
+            int state = in.nextInt();
+            char transition = in.next().charAt(0);
+            int result = in.nextInt();
+
+            if (!map.containsKey(state)) {
+                if (state > maxState) maxState = state;
+                map.put(state, new HashMap<>());
+            }
+            map.get(state).put(transition, result);
+        }
+        Map<Character, Integer>[] arr = new Map[maxState];
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = map.getOrDefault(i, new HashMap<>());
+        }
+        return createTotalTransitionFunction(arr, arr.length > 0 ? arr[0].keySet() : Collections.EMPTY_SET);
     }
 
     /**
@@ -51,11 +71,11 @@ public class DFATransitionFunction extends TransitionFunction<Integer> {
      *                   i.e., transition[0][map.get('a')] is the transition from state 0 when parsing an 'a'.
      * @return A transition function.
      */
-    public static DFATransitionFunction createTotalTransitionFunction(Integer[][] transition, Map<Character, Integer> map) {
+    public static DFATransitionFunction createTotalTransitionFunction(List<List<Integer>> transition, Map<Character, Integer> map) {
         // Verify this is a valid transition function.
-        for (int q = 0; q < transition.length; q++) {
-            for (char a = 0; a < transition[q].length; a++) {
-                if (map.keySet().contains(a) && (transition[q][a] == null || transition[q][a] < 0 || transition[q][a] > transition.length)) {
+        for (int q = 0; q < transition.size(); q++) {
+            for (char a = 0; a < transition.get(q).size(); a++) {
+                if (map.keySet().contains(a) && (transition.get(q).get(a) == null || transition.get(q).get(a) < 0 || transition.get(q).get(a) > transition.size())) {
                     throw new RuntimeException("Busted Transition Function");
                 }
             }
@@ -74,10 +94,11 @@ public class DFATransitionFunction extends TransitionFunction<Integer> {
 
     /**
      * Create a new toc.regular.dfa.DFATransitionFunction, given the transition and map.
+     * The transition must be an unmodifiable list of unmodifiable lists.
      * @param transition
      * @param map
      */
-    private DFATransitionFunction(Integer[][] transition, Map<Character, Integer> map) {
+    private DFATransitionFunction(List<List<Integer>> transition, Map<Character, Integer> map) {
         super(transition, map);
     }
 
@@ -86,20 +107,18 @@ public class DFATransitionFunction extends TransitionFunction<Integer> {
         if (!map.containsKey(c)) {
             throw new RuntimeException("Character not in alphabet.");
         }
-        Integer result = (Integer) transitions[state][map.get(c)];
+        Integer result = transitions.get(state).get(map.get(c));
         return result == null ? 0 : result;
     }
 
-
-    /*
-        TODO: Finish conversion to non-ascii alphabet.
-
+    /**
+     * Create a new transition function with only the specified states.
+     * @param states The states to keep from the transition function.
+     * @return A new DFATransitionFunction with a subset of the original states.
      */
-
     public DFATransitionFunction keepStates(Set<Integer> states) {
         System.out.println("Keeping states " + states  + " out of " + numStates());
-        int newSize = states.size();
-        int[] offsets = new int[transitions.length];
+        int[] offsets = new int[transitions.size()];
         int currOffset = 0;
         for (int i = 0; i < offsets.length; i++) {
             if (!states.contains(i)) {
@@ -109,17 +128,17 @@ public class DFATransitionFunction extends TransitionFunction<Integer> {
                 offsets[i] = currOffset;
             }
         }
-        System.out.println("Offsets: " + Arrays.toString(offsets));
-        Integer[][] newTransition = new Integer[newSize][map.size()];
-        int currTransition = 0;
-        for (int i = 0; i < transitions.length; i++) {
+//        System.out.println("Offsets: " + Arrays.toString(offsets));
+        List<List<Integer>> newTransition = new ArrayList<>();
+        for (int i = 0; i < transitions.size(); i++) {
             if (!states.contains(i)) continue;
+            ArrayList<Integer> curr = new ArrayList<>();
             for (int j = 0; j < map.size(); j++) {
-                newTransition[currTransition][j] = (Integer) transitions[i][j] - offsets[(int) transitions[i][j]];
+                curr.add(transitions.get(i).get(j) - offsets[transitions.get(i).get(j)]);
             }
-            System.out.println(Arrays.toString(newTransition[currTransition]));
-            currTransition++;
+            newTransition.add(Collections.unmodifiableList(curr));
+//            System.out.println(Arrays.toString(newTransition[currTransition]));
         }
-        return new DFATransitionFunction(newTransition, map);
+        return new DFATransitionFunction(Collections.unmodifiableList(newTransition), map);
     }
 }

@@ -11,13 +11,13 @@ import java.util.*;
  */
 public class NFA extends Acceptor<Set<Integer>> {
 
-    private NFATransitionFunction δ;
-    private Set<Integer> F;
+    public final NFATransitionFunction δ;
+    public final Set<Integer> F;
 
     public NFA(NFATransitionFunction δ, Set<Character> Σ, Set<Integer> F) {
         super(Σ);
         this.δ = δ;
-        this.F = F;
+        this.F = Set.copyOf(F);
     }
 
     public boolean recognizes(String s) {
@@ -50,16 +50,13 @@ public class NFA extends Acceptor<Set<Integer>> {
         HashSet<Integer> initialState = new HashSet<>(Arrays.asList(0));
         newStates.add(initialState);
 
-        // Trap state
-        HashSet<Integer> TRAP = new HashSet<>(Arrays.asList(0));
-
         // Maps the current set of states to a state name.
         HashMap<HashSet<Integer>, Integer> stateNames = new HashMap<>();
         stateNames.put(initialState, 0);
 
         // The transition function for the DFA
-        ArrayList<Integer[]> transitionFunction = new ArrayList<>();
-        transitionFunction.add(new Integer[Σ.size()]); // q1 is the initial state
+        ArrayList<List<Integer>> transitionFunction = new ArrayList<>();
+        transitionFunction.add(new ArrayList<>(Σ.size())); // q1 is the initial state
 
         while (newStates.size() > 0) {
             HashSet<Integer> currState = newStates.iterator().next();
@@ -70,15 +67,13 @@ public class NFA extends Acceptor<Set<Integer>> {
                 for (int q : currState) {
                     nextState.addAll(δ.of(q, a));
                 }
-                if (nextState.size() > 0 && !nextState.equals(TRAP)) {
-                    if (!stateNames.containsKey(nextState)) {
-                        stateNames.put(nextState, stateNames.size());
-                        newStates.add(nextState);
-                        transitionFunction.add(new Integer[Σ.size()]); // Define this state's transitions
-                    }
-                    //System.out.println(currStateName + " " + (char) i + "  " + stateNames.get(nextState) + " " + nextState);
-                    transitionFunction.get(currStateName)[δ.map.get(a)] = stateNames.get(nextState);  // Map from this state to next
+                if (!stateNames.containsKey(nextState)) {
+                    stateNames.put(nextState, stateNames.size());
+                    newStates.add(nextState);
+                    transitionFunction.add(new ArrayList<>(Arrays.asList(new Integer[Σ.size()]))); // Define this state's transitions
                 }
+                //System.out.println(currStateName + " " + a + "  " + stateNames.get(nextState) + " " + nextState);
+                transitionFunction.get(currStateName).set(δ.map.get(a), stateNames.get(nextState));  // Map from this state to next
             }
             newStates.remove(currState);
         }
@@ -101,11 +96,11 @@ public class NFA extends Acceptor<Set<Integer>> {
             finalStates.add(0);
         }
 
-//        //System.out.println("Final States: " + finalStates);
-        Integer[][] transition = new Integer[transitionFunction.size()][];
+        //System.out.println("Final States: " + finalStates);
+        List<List<Integer>> transition = new ArrayList<>();
         for (int i = 0; i < transitionFunction.size(); i++) {
-            transition[i] = transitionFunction.get(i);
-//            //System.out.println(Arrays.toString(transition[i]));
+            transition.add(List.copyOf(transitionFunction.get(i)));
+            //System.out.println(Arrays.toString(transition[i]));
         }
         DFATransitionFunction δ = DFATransitionFunction.createTotalTransitionFunction(transition, this.δ.map);
         return new DFA(δ, Σ, finalStates);

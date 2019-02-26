@@ -122,14 +122,20 @@ public class DFA extends Acceptor<Integer> {
         System.out.println("NewStateNumber: " + Arrays.toString(newStateNumber));
 
         // Step 5: Construct a new transition function on the sets of indistinguishable states.
-        Integer[][] transition = new Integer[newStateCount][Σ.size()];
+        List<List<Integer>> transition = new ArrayList<>();
+        for (int i = 0; i < newStateCount; i++) {
+            transition.add(new ArrayList<>(Arrays.asList(new Integer[Σ.size()])));
+        }
         for (int i = 0; i < newDelta.numStates(); i++) {
             for (char a : Σ) {
-                transition[newStateNumber[i]][δ.map.get(a)] = newStateNumber[newDelta.of(i, a)];
+                transition.get(newStateNumber[i]).set(δ.map.get(a), newStateNumber[newDelta.of(i, a)]);
             }
         }
+        for (int i = 0; i < newStateCount; i++) {
+            transition.set(i, Collections.unmodifiableList(transition.get(i)));
+        }
 
-        DFATransitionFunction finalDelta = DFATransitionFunction.createTotalTransitionFunction(transition, δ.map);
+        DFATransitionFunction finalDelta = DFATransitionFunction.createTotalTransitionFunction(Collections.unmodifiableList(transition), δ.map);
         Set<Integer> finalF = new HashSet<>();
         for (int f : F) {
             if (accessible.contains(f)) {

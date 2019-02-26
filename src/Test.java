@@ -1,6 +1,11 @@
 import toc.regular.Acceptor;
 import toc.regular.dfa.DFA;
 import toc.regular.dfa.DFATransitionFunction;
+import toc.regular.exp.PrimitiveRegExp;
+import toc.regular.exp.RegularExpression;
+import toc.regular.exp.operations.Concatenation;
+import toc.regular.exp.operations.StarClosure;
+import toc.regular.exp.operations.Union;
 import toc.regular.nfa.NFA;
 import toc.regular.nfa.NFATransitionFunction;
 
@@ -16,8 +21,11 @@ public class Test {
     public static void main(String[] args) {
 //        dfaTest();
 //        nfaTest();
-        testReduceStates();
+//        testReduceStates();
 //        testNFAtoDFA();
+//        testConcatenation();
+//        testStarClosure();
+        testUnion();
     }
 
     public static void testAcceptor(Acceptor... acceptors) {
@@ -79,6 +87,39 @@ public class Test {
         testAcceptor(dfa, reduced);
     }
 
+    public static void testConcatenation() {
+        Set<Character> Σ = new HashSet<>(Arrays.asList('a', 'b', 'c'));
+        PrimitiveRegExp a = PrimitiveRegExp.a('a', Σ);
+        PrimitiveRegExp b = PrimitiveRegExp.a('b', Σ);
+        PrimitiveRegExp c = PrimitiveRegExp.a('c', Σ);
+        RegularExpression cab = new Concatenation(c, new Concatenation(a, b));
+
+        testAcceptor(cab.toNFA());
+    }
+
+    public static void testStarClosure() {
+        // Matches ca*b
+        Set<Character> Σ = new HashSet<>(Arrays.asList('a', 'b', 'c'));
+        PrimitiveRegExp a = PrimitiveRegExp.a('a', Σ);
+        PrimitiveRegExp b = PrimitiveRegExp.a('b', Σ);
+        PrimitiveRegExp c = PrimitiveRegExp.a('c', Σ);
+        RegularExpression cab = new Concatenation(c, new Concatenation(new StarClosure(a), b));
+
+        testAcceptor(cab.toNFA());
+    }
+
+    public static void testUnion() {
+        // Matches c(a+b)*c
+        Set<Character> Σ = new HashSet<>(Arrays.asList('a', 'b', 'c'));
+        PrimitiveRegExp a = PrimitiveRegExp.a('a', Σ);
+        PrimitiveRegExp b = PrimitiveRegExp.a('b', Σ);
+        PrimitiveRegExp c = PrimitiveRegExp.a('c', Σ);
+        RegularExpression cab = new Concatenation(c, new Concatenation(new StarClosure(new Union(a, b)), c));
+
+        testAcceptor(cab.toNFA());
+    }
+
+
     public static void testNFAtoDFA() {
         Map<Character, Set<Integer>>[] t = NFATransitionFromString(
                 "0 0 1\n" +
@@ -89,10 +130,10 @@ public class Test {
         for (Map<Character, Set<Integer>> s : t) {
             System.out.println(s);
         }
-        Set[] λ = new Set[3];
-        λ[0] = new HashSet<>(Arrays.asList(1));
-        λ[1] = new HashSet<>();
-        λ[2] = new HashSet<>();
+        List<Set<Integer>> λ = new ArrayList<>();
+        λ.add(new HashSet<>(Arrays.asList(1)));
+        λ.add(new HashSet<>());
+        λ.add(new HashSet<>());
 
         Set<Character> Σ = new HashSet<>(Arrays.asList('0', '1'));
         NFATransitionFunction delta = NFATransitionFunction.createNFATransition(t, λ, Σ);
