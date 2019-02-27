@@ -1,6 +1,7 @@
 package toc.regular.exp;
 
 import toc.regular.nfa.NFA;
+import toc.regular.nfa.NFABuilder;
 import toc.regular.nfa.NFATransitionFunction;
 
 import java.util.*;
@@ -10,29 +11,44 @@ import java.util.*;
  */
 public class PrimitiveRegExp extends RegularExpression {
 
+    /**
+     * The regular expression for the empty language.
+     * @param Σ The alphabet set this regex is defined over
+     * @return A Regular Expression that accepts nothing.
+     */
     public static PrimitiveRegExp ϕ(Set<Character> Σ) {
-        Map<Character, Set<Integer>>[] t = new Map[]{new HashMap()};
-        NFATransitionFunction δ = NFATransitionFunction.createNFATransition(t, Σ);
-        NFA nfa = new NFA(δ, Σ, new HashSet<>());
-        return new PrimitiveRegExp(nfa, Σ);
+        NFABuilder builder = new NFABuilder(Σ);
+        builder.addState();
+        return new PrimitiveRegExp(builder.build(), Σ);
     }
 
+    /**
+     * The regular expression for the empty string.
+     * @param Σ The alphabet set this regex is defined over.
+     * @return A regular expression that recognizes the empty string.
+     */
     public static PrimitiveRegExp λ(Set<Character> Σ) {
-        Map<Character, Set<Integer>>[] t = new Map[]{new HashMap<>()};
-        NFATransitionFunction δ = NFATransitionFunction.createNFATransition(t, Σ);
-        NFA nfa = new NFA(δ, Σ, new HashSet<>(Arrays.asList(0)));
-        return new PrimitiveRegExp(nfa, Σ);
+        NFABuilder builder = new NFABuilder(Σ);
+        builder.addFinalState(builder.addState());
+        return new PrimitiveRegExp(builder.build(), Σ);
     }
 
+    /**
+     * A regular expression that identifies a single character from the alphabet.
+     * @param a The letter to be recognized
+     * @param Σ The alphabet set to define the regex over
+     * @return A regular expression that recognizes the string 'a'.
+     */
     public static PrimitiveRegExp a(char a, Set<Character> Σ) {
         if (!Σ.contains(a)) {
             throw new RuntimeException("Primitive Character is not in alphabet!");
         }
-        Map<Character, Set<Integer>>[] t = new Map[]{new HashMap(), new HashMap()};
-        t[0].put(a, new HashSet<>(Arrays.asList(1)));
-        NFATransitionFunction δ = NFATransitionFunction.createNFATransition(t, Σ);
-        NFA nfa = new NFA(δ, Σ, new HashSet<>(Arrays.asList(1)));
-        return new PrimitiveRegExp(nfa, Σ);
+        NFABuilder builder = new NFABuilder(Σ);
+        int start = builder.addState();
+        int end = builder.addState();
+        builder.addTransition(start, a, end);
+        builder.addFinalState(end);
+        return new PrimitiveRegExp(builder.build(), Σ);
     }
 
     private final NFA recognizer;

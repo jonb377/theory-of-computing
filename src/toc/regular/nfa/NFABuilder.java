@@ -63,7 +63,7 @@ public class NFABuilder {
      * @param p The resulting state
      */
     public void addTransition(int q, char a, int p) {
-        δ.get(q).get(p).add(map.get(a));
+        δ.get(q).get(map.get(a)).add(p);
     }
 
     /**
