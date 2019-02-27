@@ -41,10 +41,12 @@ public class Test {
 
     public static void testRegexp() {
         Set<Character> Σ = new HashSet<>(Arrays.asList('a', 'b', 'c'));
-        RegularExpression regex = RegularExpression.parse("()(a+b)**c(a+b+λ)", Σ);
+        RegularExpression regex = RegularExpression.parse("ϕ+a*", Σ);
         NFA nfa = regex.toNFA();
+        DFA dfa = regex.toOptimizedDFA();
+        System.out.println(nfa.δ.numStates() + "\t" + dfa.numStates());
 
-        testAcceptor(nfa);
+        testAcceptor(dfa);
     }
 
     public static void testReduceStates() {

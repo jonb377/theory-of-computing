@@ -56,7 +56,7 @@ public class NFA extends Acceptor<Set<Integer>> {
 
         // The transition function for the DFA
         ArrayList<List<Integer>> transitionFunction = new ArrayList<>();
-        transitionFunction.add(new ArrayList<>(Σ.size())); // q1 is the initial state
+        transitionFunction.add(new ArrayList<>(Arrays.asList(new Integer[Σ.size()]))); // q1 is the initial state
 
         while (newStates.size() > 0) {
             HashSet<Integer> currState = newStates.iterator().next();

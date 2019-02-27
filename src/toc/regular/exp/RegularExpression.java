@@ -6,9 +6,7 @@ import toc.regular.exp.operations.StarClosure;
 import toc.regular.exp.operations.Union;
 import toc.regular.nfa.NFA;
 
-import java.nio.channels.Pipe;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -39,8 +37,13 @@ public abstract class RegularExpression {
         }
     }
 
+    /**
+     * Parse a regular expression from a string.
+     * @param s The string to parse
+     * @param Σ The alphabet this regexp is defined over
+     * @return A regular expression for the string.
+     */
     public static RegularExpression parse(String s, Set<Character> Σ) {
-        System.out.println("Expanding regexp " + s);
         ArrayList<Symbol> symbols = new ArrayList<>();
         for (int i = 0; i < s.length(); i++) {
             if (s.charAt(i) == '(') {
@@ -65,6 +68,8 @@ public abstract class RegularExpression {
                 symbols.add(new Symbol(PrimitiveRegExp.a(s.charAt(i), Σ)));
             } else if (s.charAt(i) == 'λ') {
                 symbols.add(new Symbol(PrimitiveRegExp.λ(Σ)));
+            } else if (s.charAt(i) == 'ϕ') {
+                symbols.add(new Symbol(PrimitiveRegExp.ϕ(Σ)));
             } else if (s.charAt(i) == '*' || s.charAt(i) == '+') {
                 symbols.add(new Symbol(s.charAt(i)));
             } else {
@@ -123,20 +128,38 @@ public abstract class RegularExpression {
         this.Σ = Set.copyOf(Σ);
     }
 
+    /**
+     * @param other The regexp to append
+     * @return A regexp with this followed by other.
+     */
     public RegularExpression append(RegularExpression other) {
         return new Concatenation(this, other);
     }
 
+    /**
+     * @param other The regexp to 'or' with.
+     * @return A new regexp that recognizes this or the other.
+     */
     public RegularExpression or(RegularExpression other) {
         return new Union(this, other);
     }
 
+    /**
+     * @return A new regexp that recognizes the star closure of this regexp.
+     */
     public RegularExpression star() {
         return new StarClosure(this);
     }
 
+    /**
+     * @return An NFA representing this regexp.
+     */
     public abstract NFA toNFA();
 
+    /**
+     * Converts the regexp to a DFA and optimizes it.
+     * @return A minimal DFA that recognizes the same language as this regular expression.
+     */
     public DFA toOptimizedDFA() {
         return toNFA().convertToDFA().reduceStates();
     }

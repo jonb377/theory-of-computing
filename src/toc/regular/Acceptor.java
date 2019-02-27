@@ -1,6 +1,5 @@
 package toc.regular;
 
-import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -9,7 +8,6 @@ import java.util.Set;
 public abstract class Acceptor<T> {
 
     public final Set<Character> Σ;
-    private TransitionFunction<T> δ;
 
     public Acceptor(Set<Character> Σ) {
         this.Σ = Set.copyOf(Σ);

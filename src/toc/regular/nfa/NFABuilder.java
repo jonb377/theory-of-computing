@@ -6,6 +6,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * A class to build an NFA.
+ *
  * @author Jon Bolin
  */
 public class NFABuilder {
