@@ -25,7 +25,8 @@ public class Test {
 //        testNFAtoDFA();
 //        testConcatenation();
 //        testStarClosure();
-        testUnion();
+//        testUnion();
+        testRegexp();
     }
 
     public static void testAcceptor(Acceptor... acceptors) {
@@ -38,38 +39,13 @@ public class Test {
         }
     }
 
-//    public static void nfaTest() {
-//        Set[][] t = new Set[6][ALPHABET_SIZE];
-//        t[0]['a'] = new HashSet(Arrays.asList(1, 4));
-//        t[1]['a'] = new HashSet(Arrays.asList(2));
-//        t[2]['a'] = new HashSet(Arrays.asList(3));
-//        t[3]['a'] = new HashSet();
-//        t[4]['a'] = new HashSet(Arrays.asList(5));
-//        t[5]['a'] = new HashSet(Arrays.asList(4));
-//        Set<Character> Σ = new HashSet<>(Arrays.asList('a'));
-//        NFATransitionFunction delta = NFATransitionFunction.createNFATransition(t, Σ);
-//
-//        Set F = new HashSet(Arrays.asList(3, 5));
-//        NFA nfa = new NFA(delta, Σ, F);
-//        DFA dfa = nfa.convertToDFA();
-//        testAcceptor(nfa, dfa);
-//    }
-//
-//    public static void dfaTest() {
-//        Integer[][] transition = new Integer[3][ALPHABET_SIZE];
-//        transition[0]['a'] = 0;
-//        transition[0]['b'] = 1;
-//        transition[1]['a'] = 2;
-//        transition[1]['b'] = 1;
-//        transition[2]['a'] = 2;
-//        transition[2]['b'] = 2;
-//        Set<Character> Σ = new HashSet<>(Arrays.asList('a', 'b'));
-//        DFATransitionFunction t = DFATransitionFunction.createTotalTransitionFunction(transition, Σ);
-//        Set F = new HashSet(Arrays.asList(1));
-//        DFA dfa = new DFA(t, Σ, F);
-//
-//        testAcceptor(dfa);
-//    }
+    public static void testRegexp() {
+        Set<Character> Σ = new HashSet<>(Arrays.asList('a', 'b', 'c'));
+        RegularExpression regex = RegularExpression.parse("()(a+b)**c(a+b+λ)", Σ);
+        NFA nfa = regex.toNFA();
+
+        testAcceptor(nfa);
+    }
 
     public static void testReduceStates() {
         Map<Character, Integer>[] t = DFATransitionFromString(

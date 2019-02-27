@@ -1,10 +1,14 @@
 package toc.regular.exp;
 
+import toc.regular.dfa.DFA;
 import toc.regular.exp.operations.Concatenation;
 import toc.regular.exp.operations.StarClosure;
 import toc.regular.exp.operations.Union;
 import toc.regular.nfa.NFA;
 
+import java.nio.channels.Pipe;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -22,33 +26,98 @@ import java.util.Set;
  */
 public abstract class RegularExpression {
 
-    public final Set<Character> Σ;
+    private static class Symbol {
+        RegularExpression regexp;
+        char character;
 
-    public static RegularExpression toRegExp(String r, Set<Character> Σ) {
-        if (r.length() == 0) {
-            return PrimitiveRegExp.λ(Σ);
-        } else if (r.length() == 1) {
-            return PrimitiveRegExp.a(r.charAt(0), Σ);
-        } else {
-            // look for parentheses
-            int index = r.indexOf('(');
-            if (index >= 0) {
-                int j = index + 1;
-                int parenCount = 1;
-                while (j < r.length() && parenCount > 0) {
-                    if (r.charAt(j) == ')') parenCount--;
-                    else if (r.charAt(j) == '(') parenCount++;
-                    j++;
-                }
-                if (parenCount > 0) {
-                    throw new RuntimeException("Invalid Regexp: unbalanced parentheses");
-                }
-                return toRegExp(r.substring(0, index), Σ)
-                        .append(toRegExp(r.substring(index + 1, j), Σ))
-                        .append(toRegExp(r.substring(j + 1), Σ));
-            }
+        public Symbol(RegularExpression reg) {
+            this.regexp = reg;
+        }
+
+        public Symbol(char c) {
+            this.character = c;
         }
     }
+
+    public static RegularExpression parse(String s, Set<Character> Σ) {
+        System.out.println("Expanding regexp " + s);
+        ArrayList<Symbol> symbols = new ArrayList<>();
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) == '(') {
+                int parenCount = 1;
+                int currInd = i + 1;
+                while (currInd < s.length() && parenCount > 0) {
+                    if (s.charAt(currInd) == ')') parenCount--;
+                    else if (s.charAt(currInd) == '(') parenCount++;
+                    currInd++;
+                }
+                if (parenCount != 0) {
+                    char[] arr = new char[i];
+                    for (int j = 0; j < i; j++) arr[j] = ' ';
+                    String spaces = new String(arr);
+                    System.err.println("Unbalanced parentheses: " + s);
+                    System.err.println("                        " + spaces + "^");
+                    throw new RuntimeException();
+                }
+                symbols.add(new Symbol(parse(s.substring(i+1, currInd-1), Σ)));
+                i = currInd-1;
+            } else if (Σ.contains(s.charAt(i))) {
+                symbols.add(new Symbol(PrimitiveRegExp.a(s.charAt(i), Σ)));
+            } else if (s.charAt(i) == 'λ') {
+                symbols.add(new Symbol(PrimitiveRegExp.λ(Σ)));
+            } else if (s.charAt(i) == '*' || s.charAt(i) == '+') {
+                symbols.add(new Symbol(s.charAt(i)));
+            } else {
+                char[] arr = new char[i];
+                for (int j = 0; j < i; j++) arr[j] = ' ';
+                String spaces = new String(arr);
+                System.err.println("Unknown symbol: " + s);
+                System.err.println("                " + spaces + "^");
+                throw new RuntimeException();
+            }
+        }
+
+        // Expand the star-closures
+        for (int i = 0; i < symbols.size(); i++) {
+            if (symbols.get(i).character == '*') {
+                if (i == 0) {
+                    throw new RuntimeException("String can't start with *!");
+                }
+                System.out.println("Starring regular expression");
+                symbols.get(i - 1).regexp = symbols.get(i - 1).regexp.star();
+                symbols.remove(i);
+                i--;
+            }
+        }
+
+        // Expand concatenations
+        for (int i = 0; i < symbols.size() - 1; i++) {
+            if (symbols.get(i).regexp != null && symbols.get(i + 1).regexp != null) {
+                symbols.get(i).regexp = symbols.get(i).regexp.append(symbols.get(i + 1).regexp);
+                symbols.remove(i + 1);
+                i--;
+            }
+        }
+
+        // Expand union
+        for (int i = 1; i < symbols.size() - 1; i++) {
+            if (symbols.get(i - 1).regexp != null && symbols.get(i).character == '+' && symbols.get(i + 1).regexp != null) {
+                symbols.get(i - 1).regexp = symbols.get(i - 1).regexp.or(symbols.get(i + 1).regexp);
+                symbols.remove(i);
+                symbols.remove(i);
+                i--;
+            }
+        }
+
+        if (symbols.size() > 1) {
+            throw new RuntimeException("Bad regexp!");
+        } else if (symbols.size() == 0) {
+            return PrimitiveRegExp.λ(Σ);
+        }
+        return symbols.get(0).regexp;
+    }
+
+    public final Set<Character> Σ;
 
     public RegularExpression(Set<Character> Σ) {
         this.Σ = Set.copyOf(Σ);
@@ -67,5 +136,9 @@ public abstract class RegularExpression {
     }
 
     public abstract NFA toNFA();
+
+    public DFA toOptimizedDFA() {
+        return toNFA().convertToDFA().reduceStates();
+    }
 
 }

@@ -87,7 +87,6 @@ public class NFABuilder {
      * @return The offset for each state. i.e., the state number in this NFA = the state number in the original + offset
      */
     public int addNFA(NFA nfa) {
-        System.out.println("Lambda size pre: " + λ.size());
         int priorSize = δ.size();
         for (int i = 0; i < nfa.δ.numStates(); i++) {
             List<Set<Integer>> curr = new ArrayList<>();
@@ -111,7 +110,6 @@ public class NFABuilder {
             }
             λ.add(currSet);
         }
-        System.out.println("Lambda size " + nfa.δ.numStates() + " later: " + λ.size());
         return priorSize;
     }
 
