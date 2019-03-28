@@ -1,3 +1,4 @@
+import toc.grammar.Production;
 import toc.regular.Acceptor;
 import toc.regular.dfa.DFA;
 import toc.regular.dfa.DFATransitionFunction;
@@ -6,6 +7,7 @@ import toc.regular.exp.RegularExpression;
 import toc.regular.exp.operations.Concatenation;
 import toc.regular.exp.operations.StarClosure;
 import toc.regular.exp.operations.Union;
+import toc.regular.grammar.RightLinearGrammar;
 import toc.regular.nfa.NFA;
 import toc.regular.nfa.NFATransitionFunction;
 
@@ -16,8 +18,6 @@ import java.util.*;
  */
 public class Test {
 
-    public static final int ALPHABET_SIZE = 256;
-
     public static void main(String[] args) {
 //        dfaTest();
 //        nfaTest();
@@ -26,7 +26,33 @@ public class Test {
 //        testConcatenation();
 //        testStarClosure();
 //        testUnion();
-        testRegexp();
+//        testRegexp();
+//        testRLG();
+        testRLGGeneration();
+    }
+
+    public static void testRLGGeneration() {
+        RegularExpression reg = RegularExpression.parse("(c+d)(ab)*", new HashSet<>(Arrays.asList('a','b','c','d')));
+        RightLinearGrammar rlg = reg.toNFA().toRLG();
+        for (String s : rlg.produce(4)) {
+            System.out.println(s);
+        }
+    }
+
+    public static void testRLG() {
+        Set<Character> T = new HashSet<>(Arrays.asList('a','b','c'));
+        Set<Character> V = new HashSet<>(Arrays.asList('A', 'B', 'C', 'S'));
+        Set<Production> P = new HashSet<>();
+        P.add(new Production("S","abS"));
+        P.add(new Production("S","a"));
+        RightLinearGrammar rlg = new RightLinearGrammar(T, V, P, 'S');
+        ArrayList<String> res = new ArrayList<>();
+        rlg.produce(10);
+        for (String s : res) {
+            System.out.println(s);
+        }
+        NFA nfa = rlg.toNFA();
+        testAcceptor(nfa);
     }
 
     public static void testAcceptor(Acceptor... acceptors) {

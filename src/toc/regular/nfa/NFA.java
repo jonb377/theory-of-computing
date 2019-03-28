@@ -1,8 +1,10 @@
 package toc.regular.nfa;
 
+import toc.grammar.Production;
 import toc.regular.Acceptor;
 import toc.regular.dfa.DFA;
 import toc.regular.dfa.DFATransitionFunction;
+import toc.regular.grammar.RightLinearGrammar;
 
 import java.util.*;
 
@@ -104,5 +106,37 @@ public class NFA extends Acceptor<Set<Integer>> {
         }
         DFATransitionFunction δ = DFATransitionFunction.createTotalTransitionFunction(transition, this.δ.map);
         return new DFA(δ, Σ, finalStates);
+    }
+
+    private char getStateName(HashMap<Integer, Character> variables, int state) {
+        if (variables.containsKey(state)) return variables.get(state);
+        for (char c = 'A'; c < Character.MAX_VALUE; c++) {
+            if (!Σ.contains((char) (c + state)) && !variables.containsKey((char) (c + state))) {
+                variables.put(state, (char) (c + state));
+                return (char) (c + state);
+            }
+        }
+        throw new RuntimeException("Unable to allocate new variable name!");
+    }
+
+    public RightLinearGrammar toRLG() {
+        Set<Production> productions = new HashSet<>();
+        Set<Character> V = new HashSet<>();
+        HashMap<Integer, Character> variables = new HashMap<>();
+        char currvar = 'A';
+        for (int i = 0; i < δ.numStates(); i++) {
+            char currVar = getStateName(variables, i);
+            V.add(currVar);
+            for (char c : Σ) {
+                for (Integer res : δ.of(i, c)) {
+                    productions.add(new Production(String.valueOf(currVar), String.valueOf(c) + (char) ('A' + res)));
+                }
+            }
+            if (F.contains(i)) {
+                productions.add(new Production(String.valueOf(currVar), "λ"));
+            }
+        }
+        for (Production p : productions) System.out.println(p);
+        return new RightLinearGrammar(Σ, V, productions, 'A');
     }
 }

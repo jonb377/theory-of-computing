@@ -8,3 +8,5 @@ I have implemented the following for regular languages:
 - NFA to DFA conversion algorithm
 - Regular Expressions using recursive definition and NFA construction
 - Regular Expressions parser
+- Left and Right Linear Grammars
+- Right Linear Grammar to NFA conversion
