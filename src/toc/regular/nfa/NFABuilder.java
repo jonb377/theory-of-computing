@@ -105,10 +105,8 @@ public class NFABuilder {
         }
         for (Set<Integer> set : nfa.δ.λ) {
             Set<Integer> currSet = new HashSet<>();
-            if (currSet != null) {
-                for (int j : set) {
-                    currSet.add(j + priorSize);
-                }
+            for (int j : set) {
+                currSet.add(j + priorSize);
             }
             λ.add(currSet);
         }
