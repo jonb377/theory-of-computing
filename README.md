@@ -10,3 +10,12 @@ I have implemented the following for regular languages:
 - Regular Expressions parser
 - Left and Right Linear Grammars
 - Right Linear Grammar to NFA conversion
+
+## Context Free Languages
+I have implemented the following for context-free languages
+- Context-free grammars
+- Grammar simplification by removal of:
+-- Empty-string productions
+-- Useless productions
+-- Unit productions
+- Language membership test in Context Free Grammars via the CYK algorithm

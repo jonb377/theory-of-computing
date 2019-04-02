@@ -1,3 +1,5 @@
+import toc.contextfree.ContextFreeGrammar;
+import toc.grammar.CFGBuilder;
 import toc.grammar.Production;
 import toc.regular.Acceptor;
 import toc.regular.dfa.DFA;
@@ -28,7 +30,87 @@ public class Test {
 //        testUnion();
 //        testRegexp();
 //        testRLG();
-        testRLGGeneration();
+//        testRLGGeneration();
+//        testCFG();
+//        testNullableCFG();
+//        testUselessCFG();
+//        testUnitCFG();
+//        testCNF();
+        testCFGMembership();
+    }
+
+    public static void testCFGMembership() {
+        CFGBuilder builder = new CFGBuilder('S');
+        builder.addProduction("S", "AB");
+        builder.addProduction("A", "BB|a");
+        builder.addProduction("B", "AB|b");
+        ContextFreeGrammar cfg = builder.build().toChomskyNormalForm();
+        Scanner in = new Scanner(System.in);
+        while (true) {
+            String s = in.nextLine();
+            System.out.println(cfg.isMember(s));
+        }
+    }
+
+    public static void testCNF() {
+        CFGBuilder builder = new CFGBuilder('S');
+        builder.addProduction("S", "ABa");
+        builder.addProduction("B", "Ac");
+        builder.addProduction("A", "aab");
+        ContextFreeGrammar cfg = builder.build();
+        System.out.println(cfg);
+        System.out.println(cfg.toChomskyNormalForm());
+    }
+
+    public static void testUnitCFG() {
+        CFGBuilder builder = new CFGBuilder('S');
+        builder.addProduction("S", "Aa|B");
+        builder.addProduction("B", "A|bb");
+        builder.addProduction("A", "a|bc|B");
+        ContextFreeGrammar cfg = builder.build();
+        System.out.println(cfg);
+        System.out.println(cfg.removeUnitProductions().removeUselessProductions());
+    }
+
+    public static void testUselessCFG() {
+        Set<Character> T = new HashSet<>(Arrays.asList('a','b','c'));
+        Set<Character> V = new HashSet<>(Arrays.asList('A', 'B', 'C', 'S'));
+        Set<Production> P = new HashSet<>();
+        P.add(new Production("S","A"));
+        P.add(new Production("S", "B"));
+        P.add(new Production("A","aA"));
+        P.add(new Production("A","a"));
+        P.add(new Production("B", "bB"));
+        P.add(new Production("C", "S"));
+        ContextFreeGrammar cfg = new ContextFreeGrammar(T, V, P, 'S');
+        cfg = cfg.removeUselessProductions();
+        System.out.println(cfg);
+    }
+
+    public static void testNullableCFG() {
+        Set<Character> T = new HashSet<>(Arrays.asList('a','b','c'));
+        Set<Character> V = new HashSet<>(Arrays.asList('A', 'B', 'C', 'S'));
+        Set<Production> P = new HashSet<>();
+        P.add(new Production("S","AB"));
+        P.add(new Production("A","aA"));
+        P.add(new Production("A", ""));
+        P.add(new Production("B", "bB"));
+        P.add(new Production("B", ""));
+        ContextFreeGrammar cfg = new ContextFreeGrammar(T, V, P, 'S');
+        cfg = cfg.removeLambdaProductions();
+        System.out.println(cfg);
+    }
+
+    public static void testCFG() {
+        Set<Character> T = new HashSet<>(Arrays.asList('a','b','c'));
+        Set<Character> V = new HashSet<>(Arrays.asList('A', 'B', 'C', 'S'));
+        Set<Production> P = new HashSet<>();
+        P.add(new Production("S","aSb"));
+        P.add(new Production("S","λ"));
+        ContextFreeGrammar cfg = new ContextFreeGrammar(T, V, P, 'S');
+        for (String s : cfg.produce(10)) {
+            System.out.println(s);
+        }
     }
 
     public static void testRLGGeneration() {
@@ -46,9 +128,7 @@ public class Test {
         P.add(new Production("S","abS"));
         P.add(new Production("S","a"));
         RightLinearGrammar rlg = new RightLinearGrammar(T, V, P, 'S');
-        ArrayList<String> res = new ArrayList<>();
-        rlg.produce(10);
-        for (String s : res) {
+        for (String s : rlg.produce(10)) {
             System.out.println(s);
         }
         NFA nfa = rlg.toNFA();
