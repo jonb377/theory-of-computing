@@ -1,6 +1,5 @@
 package toc.contextfree;
 
-import toc.grammar.CFGBuilder;
 import toc.grammar.Grammar;
 import toc.grammar.Production;
 

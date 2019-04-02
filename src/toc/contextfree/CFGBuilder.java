@@ -1,9 +1,8 @@
-package toc.grammar;
+package toc.contextfree;
 
-import toc.contextfree.ContextFreeGrammar;
+import toc.grammar.Production;
 
 import java.util.*;
-import java.util.stream.IntStream;
 
 /**
  * @author Jon Bolin

@@ -1,5 +1,5 @@
 import toc.contextfree.ContextFreeGrammar;
-import toc.grammar.CFGBuilder;
+import toc.contextfree.CFGBuilder;
 import toc.grammar.Production;
 import toc.regular.Acceptor;
 import toc.regular.dfa.DFA;
