@@ -1,11 +1,11 @@
-package toc.regular;
+package toc;
 
 import java.util.Set;
 
 /**
  * @author Jon Bolin
  */
-public abstract class Acceptor<T> {
+public abstract class Acceptor {
 
     public final Set<Character> Σ;
 

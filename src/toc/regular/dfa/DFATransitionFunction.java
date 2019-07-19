@@ -1,13 +1,13 @@
 package toc.regular.dfa;
 
-import toc.regular.TransitionFunction;
+import toc.regular.RegularTransitionFunction;
 
 import java.util.*;
 
 /**
  * @author Jon Bolin
  */
-public class DFATransitionFunction extends TransitionFunction<Integer> {
+public class DFATransitionFunction extends RegularTransitionFunction<Integer> {
 
     /**
      * Parse the transition function from the given string.

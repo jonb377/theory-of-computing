@@ -1,7 +1,7 @@
 import toc.contextfree.ContextFreeGrammar;
 import toc.contextfree.CFGBuilder;
 import toc.grammar.Production;
-import toc.regular.Acceptor;
+import toc.Acceptor;
 import toc.regular.dfa.DFA;
 import toc.regular.dfa.DFATransitionFunction;
 import toc.regular.exp.PrimitiveRegExp;
@@ -36,7 +36,23 @@ public class Test {
 //        testUselessCFG();
 //        testUnitCFG();
 //        testCNF();
-        testCFGMembership();
+//        testCFGMembership();
+    }
+
+    public static void check() {
+        CFGBuilder builder = new CFGBuilder('S');
+        builder.addProduction("S","aA|bB");
+        builder.addProduction("A", "bS|aAA|λ");
+        builder.addProduction("B", "aS|bBB|λ");
+        ContextFreeGrammar cfg = builder.build().toChomskyNormalForm();
+        System.out.println(cfg);
+        for (String s : cfg.produce(10)) {
+            if (!cfg.isMember(s)) System.out.println(s);
+        }
+        Scanner in = new Scanner(System.in);
+        while (true) {
+            System.out.println(cfg.isMember(in.nextLine()));
+        }
     }
 
     public static void testCFGMembership() {

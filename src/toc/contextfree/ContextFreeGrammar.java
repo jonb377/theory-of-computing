@@ -190,8 +190,8 @@ public class ContextFreeGrammar extends Grammar {
 
         // Add non-unit productions to the set.
         Set<Production> P1 = new HashSet<>();
-        for (Production p : P) {
-            if (p.RHS.length() != 1 || T.contains(p.RHS.charAt(0))) {
+        for (Production p : res.P) {
+            if (p.RHS.length() != 1 || res.T.contains(p.RHS.charAt(0))) {
                 P1.add(p);
             }
         }
@@ -199,7 +199,7 @@ public class ContextFreeGrammar extends Grammar {
         // Create new productions that aren't reliant on unit productions.
         // DFS in adjacency graph to find all chains of A -> B, B -> C, etc
         Stack<Character> stack = new Stack<>();
-        for (char v : V) {
+        for (char v : res.V) {
             Set<Character> visited = new HashSet<>();
             for (char c : adjlist.get(v)) {
                 stack.push(c);
@@ -258,6 +258,7 @@ public class ContextFreeGrammar extends Grammar {
                     builder.addProduction("" + lastV, (T.contains(curr) ? termVariables.get(curr) : curr) + "" + v);
                     lastV = v++;
                 }
+                System.out.println(p);
                 String sub = p.RHS.substring(p.RHS.length() - 2);
                 if (T.contains(sub.charAt(0))) sub = sub.replace(sub.charAt(0), termVariables.get(sub.charAt(0)));
                 if (T.contains(sub.charAt(1))) sub = sub.replace(sub.charAt(1), termVariables.get(sub.charAt(1)));

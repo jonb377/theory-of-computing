@@ -1,6 +1,6 @@
 package toc.regular.nfa;
 
-import toc.regular.TransitionFunction;
+import toc.regular.RegularTransitionFunction;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 /**
  * @author Jon Bolin
  */
-public class NFATransitionFunction extends TransitionFunction<Set<Integer>> {
+public class NFATransitionFunction extends RegularTransitionFunction<Set<Integer>> {
 
     private static final Set<Integer> EMPTY = Collections.unmodifiableSet(new HashSet<>());
     public static final UnmodifiableFunction<Set<Integer>> MAKE_UNMODIFIABLE = (t) -> t == null ? null : Set.copyOf(t);
@@ -95,7 +95,7 @@ public class NFATransitionFunction extends TransitionFunction<Set<Integer>> {
         stack.addAll(states);
         while (!stack.isEmpty()) {
             int q = stack.pop();
-            for (int p : λ.get(q)) {
+            for (int p : δ[q].get(q)) {
                 if (!startStates.contains(p)) {
                     startStates.add(p);
                     stack.push(p);
