@@ -1,7 +1,7 @@
 package toc.regular.nfa;
 
 import toc.grammar.Production;
-import toc.regular.Acceptor;
+import toc.Acceptor;
 import toc.regular.dfa.DFA;
 import toc.regular.dfa.DFATransitionFunction;
 import toc.regular.grammar.RightLinearGrammar;
@@ -11,7 +11,7 @@ import java.util.*;
 /**
  * @author Jon Bolin
  */
-public class NFA extends Acceptor<Set<Integer>> {
+public class NFA extends Acceptor {
 
     public final NFATransitionFunction δ;
     public final Set<Integer> F;

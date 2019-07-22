@@ -1,6 +1,7 @@
 package toc.grammar;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -82,7 +83,7 @@ public abstract class Grammar {
             return;
         }
         for (int i = 0; i < s.length(); i++) {
-            // TODO: Make production set into a trie and further optimizations
+            // TODO: Make production set into a trie, further optimizations
             for (Production p : P) {
                 String sub = p.sub(s, i);
                 if (sub != null) {
@@ -90,6 +91,11 @@ public abstract class Grammar {
                 }
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return P.toString();
     }
 
     /**

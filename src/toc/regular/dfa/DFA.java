@@ -1,6 +1,6 @@
 package toc.regular.dfa;
 
-import toc.regular.Acceptor;
+import toc.Acceptor;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -8,7 +8,7 @@ import java.util.stream.IntStream;
 /**
  * @author Jon Bolin
  */
-public class DFA extends Acceptor<Integer> {
+public class DFA extends Acceptor {
 
     private DFATransitionFunction δ;
     private Set<Integer> F;

@@ -1,33 +1,22 @@
 package toc.regular;
 
+import toc.TransitionFunction;
+
 import java.util.*;
-import java.util.function.Function;
 
 /**
  * @author Jon Bolin
  */
-public abstract class TransitionFunction<T> {
+public abstract class RegularTransitionFunction<T> extends TransitionFunction {
 
-    public interface UnmodifiableFunction<S> extends Function<S, S> { }
-
-    public static Map<Character, Integer> createMap(Set<Character> Σ) {
-        Map<Character, Integer> map = new HashMap<>();
-        List<Character> alphaList = new ArrayList<>(Σ);
-        Collections.sort(alphaList);
-        for (int i = 0; i < alphaList.size(); i++) map.put(alphaList.get(i), i);
-        return Collections.unmodifiableMap(map);
-    }
-
-    public Map<Character, Integer> map;
     public List<List<T>> transitions;
 
-    public TransitionFunction(Map<Character, T>[] transition, Set<Character> Σ) {
+    public RegularTransitionFunction(Map<Character, T>[] transition, Set<Character> Σ) {
         this(transition, Σ, (t) -> t);
     }
 
-    public TransitionFunction(Map<Character, T>[] transition, Set<Character> Σ, UnmodifiableFunction<T> f) {
-        // Create the map: Σ -> {0, 1, ..., |Σ| - 1}
-        this.map = TransitionFunction.createMap(Σ);
+    public RegularTransitionFunction(Map<Character, T>[] transition, Set<Character> Σ, UnmodifiableFunction<T> f) {
+        super(Σ);
 
         ArrayList<Character> alphaList = new ArrayList<>(Σ);
         Collections.sort(alphaList);
@@ -44,8 +33,8 @@ public abstract class TransitionFunction<T> {
         this.transitions = Collections.unmodifiableList(modifiable);
     }
 
-    protected TransitionFunction(List<List<T>> transition, Map<Character, Integer> map) {
-        this.map = map;
+    protected RegularTransitionFunction(List<List<T>> transition, Map<Character, Integer> map) {
+        super(map);
         this.transitions = transition;
     }
 
